@@ -1,3 +1,4 @@
+
 msgid "KMS Server"
 msgstr "KMS 服务器"
 
