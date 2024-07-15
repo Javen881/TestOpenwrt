@@ -9,7 +9,7 @@ PKG_VERSION:=1.0.4
 PKG_RELEASE:=103
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/rofl0r/microsocks/tar.gz/refs/tags/tar.gz/v$(PKG_VERSION)?
+PKG_SOURCE_URL:=https://codeload.github.com/rofl0r/microsocks/tar.gz/v$(PKG_VERSION)?
 PKG_HASH:=skip
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=COPYING
