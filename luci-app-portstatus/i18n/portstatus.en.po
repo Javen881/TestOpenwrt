@@ -1,0 +1,23 @@
+msgid "Port Status"
+msgstr "Port Status"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Speed"
+msgstr "Speed"
+
+msgid "Mode"
+msgstr "Mode"
+
+msgid "connected"
+msgstr "Connected"
+
+msgid "disconnected"
+msgstr "Disconnected"
+
+msgid "Refresh"
+msgstr "Refresh"

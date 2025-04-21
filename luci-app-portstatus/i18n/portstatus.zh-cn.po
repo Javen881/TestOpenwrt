@@ -1,0 +1,23 @@
+msgid "Port Status"
+msgstr "端口状态"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Speed"
+msgstr "速率"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "connected"
+msgstr "已连接"
+
+msgid "disconnected"
+msgstr "未连接"
+
+msgid "Refresh"
+msgstr "刷新"

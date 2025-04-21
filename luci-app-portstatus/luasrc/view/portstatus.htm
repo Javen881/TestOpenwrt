@@ -1,0 +1,18 @@
+<%+header%>
+<h2><%:Port Status%></h2>
+<form>
+    <table class="table">
+        <tr><th><%:Port%></th><th><%:Status%></th><th><%:Speed%></th><th><%:Mode%></th></tr>
+        <% for _, v in ipairs(require("luci.model.portstatus").get_switch_status()) do %>
+        <tr>
+            <td><%=v.port%></td>
+            <td><%=translate(v.link)%></td>
+            <td><%=v.speed%></td>
+            <td><%=v.mode%></td>
+        </tr>
+        <% end %>
+    </table>
+    <br />
+    <input class="btn cbi-button" type="button" value="<%:Refresh%>" onclick="location.reload();" />
+</form>
+<%+footer%>
