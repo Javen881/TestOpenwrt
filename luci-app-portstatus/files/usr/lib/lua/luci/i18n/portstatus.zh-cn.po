@@ -1,0 +1,18 @@
+msgid "Port"
+msgstr "端口"
+
+msgid "Link Status"
+msgstr "连接状态"
+
+msgid "Speed (Mb/s)"
+msgstr "速率 (Mb/s)"
+
+msgid "Duplex"
+msgstr "双工模式"
+
+msgid "Physical Port Status"
+msgstr "物理端口状态"
+
+msgid "Refresh"
+msgstr "刷新"
+
