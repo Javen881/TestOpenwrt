@@ -11,6 +11,10 @@ LUCI_DEPENDS:=+vlmcsd
 LUCI_PKGARCH:=all
 
 PKG_NAME:=luci-app-vlmcsd
+# Pin the source version so the local service-reload fix can carry a package
+# revision that opkg recognizes as newer than the previously built package.
+PKG_VERSION:=26.022.09553~82b8f17
+PKG_RELEASE:=2
 
 include $(TOPDIR)/feeds/luci/luci.mk
 

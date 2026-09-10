@@ -1,5 +1,10 @@
 m = Map("vlmcsd")
 
+-- Reload vlmcsd after its configuration file has been saved and applied.
+function m.on_after_apply(self)
+	luci.sys.call("/etc/init.d/kms restart >/dev/null 2>&1")
+end
+
 s = m:section(TypedSection, "vlmcsd")
 s.addremove = false
 s.anonymous = true

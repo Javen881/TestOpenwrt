@@ -1,12 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=vlmcsd
-PKG_VERSION:=svn1113
+PKG_VERSION:=1113
 PKG_RELEASE:=19
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/Wind4/vlmcsd/tar.gz/$(PKG_VERSION)?
+PKG_SOURCE:=vlmcsd-svn1113.tar.gz
+PKG_SOURCE_URL:=file://$(TOPDIR)/package/vlmcsd
 PKG_HASH:=skip
+PKG_BUILD_DIR:=$(BUILD_DIR)/vlmcsd-svn1113
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
@@ -20,6 +21,8 @@ define Package/vlmcsd
   SECTION:=net
   CATEGORY:=Network
   TITLE:=vlmcsd for OpenWRT
+  # Keep the user-visible package version compatible with prior svn builds.
+  VERSION:=svn1113-r21
   URL:=http://forums.mydigitallife.info/threads/50234
   DEPENDS:=+libpthread
 endef
