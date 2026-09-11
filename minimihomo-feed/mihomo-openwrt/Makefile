@@ -22,7 +22,10 @@ endef
 define Build/Prepare
 	$(RM) -r $(PKG_BUILD_DIR)
 	mkdir -p $(PKG_BUILD_DIR)
-	cp -a $(CURDIR)/../../mihomo/. $(PKG_BUILD_DIR)/
+	# `mihomo-source` is the vendored Meta branch source snapshot committed with
+	# this feed. The local `mihomo/` clone, if present, remains a developer-only
+	# upstream worktree and is intentionally not used for reproducible builds.
+	cp -a $(CURDIR)/../../mihomo-source/. $(PKG_BUILD_DIR)/
 endef
 
 define Package/mihomo/install

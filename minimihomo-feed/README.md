@@ -42,4 +42,4 @@ LuCI 上传 → /tmp/minimihomo-draft.yaml → runtime.yaml → Mihomo
 make package/luci-app-minimihomo/compile V=s
 ```
 
-生成的包位于 `bin/packages/<arch>/minimihomo/`。核心源码位于同级 `../mihomo`，构建使用 Meta 分支。
+生成的包位于 `bin/packages/<arch>/minimihomo/`。核心源码位于仓库根目录的 `mihomo-source/`，它是随本仓库提交的 Meta 分支源码快照；因此克隆本仓库后无需额外拉取核心源码即可构建。
