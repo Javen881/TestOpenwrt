@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 PKG_NAME:=luci-app-minimihomo
 PKG_VERSION:=2.0.0
-PKG_RELEASE:=16
+PKG_RELEASE:=17
 LUCI_TITLE:=LuCI support for MiniMihomo
 LUCI_DESCRIPTION:=A lightweight Mihomo Meta dashboard and runtime manager for OpenWrt
 LUCI_DEPENDS:=+luci-base +mihomo +curl +ca-bundle +jshn

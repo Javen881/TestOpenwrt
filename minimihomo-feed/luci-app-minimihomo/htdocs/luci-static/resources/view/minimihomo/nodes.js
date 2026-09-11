@@ -51,7 +51,9 @@ return view.extend({
 					E('button', { 'type': 'button', 'class': 'btn btn-xs', 'click': ui.createHandlerFn(this, function() { return choose(name, node); }) }, '切换')
 				]));
 			});
-			box.appendChild(E('details', { 'open': name === 'Proxy' }, [
+			// Keep every node list collapsed on entry.  A large subscription can
+			// otherwise create a very long, expensive-to-render page immediately.
+			box.appendChild(E('details', {}, [
 				E('summary', {}, name + '　当前：' + (group.now || '-') + '　(' + group.type + ')'), list
 			]));
 		});
