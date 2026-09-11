@@ -1,0 +1,31 @@
+#!/bin/sh
+# Short-lived bridge between LuCI/rpcd and Mihomo's local API.
+. /lib/functions.sh
+. /usr/share/libubox/jshn.sh
+config_load minimihomo
+config_get port global controller_port 9090
+config_get secret global secret ''
+base="http://127.0.0.1:$port"
+
+request() {
+	if [ -n "$secret" ]; then curl -fsS --connect-timeout 2 --max-time 8 -H "Authorization: Bearer $secret" "$base$1"; else curl -fsS --connect-timeout 2 --max-time 8 "$base$1"; fi
+}
+put() {
+	if [ -n "$secret" ]; then curl -fsS --connect-timeout 2 --max-time 8 -X PUT -H 'Content-Type: application/json' -H "Authorization: Bearer $secret" -d "$2" "$base$1"; else curl -fsS --connect-timeout 2 --max-time 8 -X PUT -H 'Content-Type: application/json' -d "$2" "$base$1"; fi
+}
+case "${1:-status}" in
+ status) if /etc/init.d/minimihomo status >/dev/null 2>&1; then state=true; else state=false; fi; printf '{"running":%s,"source":"%s","runtime":"%s"}\n' "$state" "$(uci -q get minimihomo.global.config_source || echo generated)" "$(test -s /etc/minimihomo/runtime.yaml && echo ready || echo missing)";;
+ version) request /version 2>/dev/null || printf '{}\n';;
+ proxies) request /proxies 2>/dev/null || printf '{}\n';;
+ connections) request /connections 2>/dev/null || printf '{"connections":[],"downloadTotal":0,"uploadTotal":0}\n';;
+ traffic) request /traffic 2>/dev/null || printf '{"up":0,"down":0}\n';;
+ rules) request /rules 2>/dev/null || printf '{}\n';;
+ providers) request /providers/proxies 2>/dev/null || printf '{}\n';;
+ select) [ -n "$2" ] && [ -n "$3" ] || exit 1; json_init; json_add_string name "$3"; put "/proxies/$2" "$(json_dump)" 2>/dev/null || exit 1;;
+ delay) [ -n "$2" ] && request "/proxies/$2/delay?timeout=5000&url=https%3A%2F%2Fwww.gstatic.com%2Fgenerate_204" 2>/dev/null || exit 1;;
+ delayall) request '/group/delay?timeout=5000&url=https%3A%2F%2Fwww.gstatic.com%2Fgenerate_204' 2>/dev/null || exit 1;;
+ update-provider) [ -n "$2" ] && put "/providers/proxies/$2" '{}' 2>/dev/null || exit 1;;
+ logs) cat /tmp/minimihomo.log 2>/dev/null; config_get system_log global system_log 0; [ "$system_log" = 1 ] && logread -e mihomo 2>/dev/null | tail -n 500;;
+ clear-logs) : > /tmp/minimihomo.log;;
+ *) printf '{}\n';;
+esac

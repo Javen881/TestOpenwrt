@@ -1,0 +1,137 @@
+#!/bin/sh
+# Generate a complete Mihomo configuration from /etc/config/minimihomo.
+set -e
+umask 077
+RUNDIR=/etc/minimihomo
+OUT="$RUNDIR/runtime.yaml"
+TMP="$OUT.new"
+mkdir -p "$RUNDIR/providers" "$RUNDIR/rules"
+. /lib/functions.sh
+config_load minimihomo
+trap 'code=$?; if [ "$code" -ne 0 ]; then echo "配置生成失败，退出码 $code" >&2; fi; rm -f "$TMP"' EXIT
+
+get() { local value; config_get value "$1" "$2" "$3"; printf '%s' "$value"; }
+trim() { printf '%s' "$1" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'; }
+esc() { printf '%s' "$1" | sed 's/"/\\\\"/g'; }
+bool() { [ "$1" = 1 ] && printf true || printf false; }
+is_enabled() { [ "$(get "$1" enabled 0)" = 1 ]; }
+has_url() { [ -n "$(trim "$(get "$1" url '')")" ]; }
+emit_item() { printf '    - "%s"\n' "$(esc "$1")"; }
+emit_list() { config_list_foreach "$1" "$2" emit_item; }
+emit_use() {
+	has_url "$1" || return 0
+	printf '      - %s\n' "$1" >> "$TMP"
+}
+
+cat > "$TMP" <<EOF
+allow-lan: true
+mode: $(get global mode rule)
+log-level: $(get global log_level info)
+# This controller is deliberately available on the router's LAN address only.
+# Do not replace this with 0.0.0.0 or add a WAN firewall allowance for port 9090.
+external-controller: 192.168.10.3:$(get global controller_port 9090)
+secret: ""
+ipv6: $(bool "$(get global ipv6 0)")
+profile:
+  store-selected: true
+  store-fake-ip: true
+EOF
+ports=''
+providers=0
+count_provider() {
+	has_url "$1" || return 0
+	providers=$((providers + 1))
+}
+# LuCI may store anonymous provider sections with a different section type or
+# truthy flag representation.  A non-empty URL is the only required provider
+# input, so inspect every UCI section instead of filtering on type/enabled.
+config_foreach count_provider
+[ "$providers" -gt 0 ] || { echo '没有 URL 非空的订阅，请添加订阅或导入完整 YAML。' >&2; exit 1; }
+check_port() {
+	local port
+	is_enabled "$1" || return 0
+	port="$(get "$1" port "$2")"
+	case " $ports " in *" $port "*) echo "Duplicate proxy listener port: $port" >&2; exit 1;; esac
+	ports="$ports $port"
+}
+check_port http 7890
+check_port socks 7891
+check_port mixed 7892
+is_enabled http && printf 'port: %s\n' "$(get http port 7890)" >> "$TMP"
+is_enabled socks && printf 'socks-port: %s\n' "$(get socks port 7891)" >> "$TMP"
+is_enabled mixed && printf 'mixed-port: %s\n' "$(get mixed port 7892)" >> "$TMP"
+cat >> "$TMP" <<EOF
+tun:
+  enable: $(bool "$(get global tun 1)")
+  stack: mixed
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+dns:
+  enable: $(bool "$(get dns enabled 1)")
+  listen: 0.0.0.0:$(get dns listen_port 1053)
+  ipv6: $(bool "$(get global ipv6 0)")
+  enhanced-mode: $(get dns mode fake-ip)
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+EOF
+emit_list dns fakeip_filter >> "$TMP"
+printf '  default-nameserver:\n' >> "$TMP"; emit_list dns domestic >> "$TMP"
+printf '  nameserver:\n' >> "$TMP"; emit_list dns foreign >> "$TMP"
+printf 'proxy-providers:\n' >> "$TMP"
+emit_provider() {
+	local section="$1" url
+	url="$(trim "$(get "$section" url '')")"; [ -n "$url" ] || return 0
+	printf '  %s:\n    type: http\n    url: "%s"\n    path: ./providers/%s.yaml\n    interval: %s\n    user-agent: "%s"\n    health-check:\n      enable: %s\n      url: "%s"\n      interval: %s\n' \
+		"$section" "$(esc "$url")" "$section" "$(get "$section" interval 86400)" "$(esc "$(get "$section" user_agent mihomo)")" "$(bool "$(get "$section" health_check 1)")" "$(esc "$(get "$section" health_url https://www.gstatic.com/generate_204)")" "$(get "$section" health_interval 300)" >> "$TMP"
+}
+config_foreach emit_provider
+cat >> "$TMP" <<EOF
+proxy-groups:
+  - name: Proxy
+    type: select
+    proxies: [Auto, HK, TW, JP, SG, KR, US, Other, DIRECT]
+  - name: Auto
+    type: url-test
+    use:
+EOF
+config_foreach emit_use
+cat >> "$TMP" <<EOF
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+EOF
+for group in HK TW JP SG KR US Other; do
+	case "$group" in
+		HK) filter='(?i)香港|Hong Kong|HK';; TW) filter='(?i)台湾|Taiwan|TW';; JP) filter='(?i)日本|Japan|JP';; SG) filter='(?i)新加坡|Singapore|SG';; KR) filter='(?i)韩国|Korea|KR';; US) filter='(?i)美国|United States|USA|US';; Other) filter='.*';;
+	esac
+	printf '  - name: %s\n    type: select\n    use:\n' "$group" >> "$TMP"
+	config_foreach emit_use
+	printf '    filter: "%s"\n' "$filter" >> "$TMP"
+done
+# Explicit leading newline and no indentation: rules is a top-level Mihomo key,
+# never a member of the final proxy group.
+printf '\nrules:\n' >> "$TMP"
+emit_rule() { printf '  - %s\n' "$1" >> "$TMP"; }
+config_list_foreach routing custom_rule emit_rule
+for app in google youtube github openai telegram netflix disney tiktok spotify steam microsoft apple bilibili; do
+	policy="$(get routing "$app" '')"; [ -n "$policy" ] && printf '  - GEOSITE,%s,%s\n' "$app" "$policy" >> "$TMP"
+done
+cat >> "$TMP" <<EOF
+  - GEOIP,HK,$(get routing hk HK)
+  - GEOIP,TW,$(get routing tw TW)
+  - GEOIP,JP,$(get routing jp JP)
+  - GEOIP,SG,$(get routing sg SG)
+  - GEOIP,KR,$(get routing kr KR)
+  - GEOIP,US,$(get routing us US)
+  - GEOIP,LAN,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - GEOIP,CN,$(get routing china DIRECT)
+  - MATCH,$(get routing default_policy Proxy)
+EOF
+mv "$TMP" "$OUT"

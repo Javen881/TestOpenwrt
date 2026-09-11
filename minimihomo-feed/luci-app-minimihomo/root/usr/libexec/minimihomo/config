@@ -1,0 +1,45 @@
+#!/bin/sh
+# Configuration staging: original -> normalized -> runtime. No invalid file replaces runtime.
+set -e
+umask 077
+DIR=/etc/minimihomo
+DRAFT=/tmp/minimihomo-draft.yaml
+ORIGINAL="$DIR/original.yaml"
+NORMALIZED="$DIR/normalized.yaml"
+RUNTIME="$DIR/runtime.yaml"
+REPORT="$DIR/normalizer-report.txt"
+mkdir -p "$DIR" "$DIR/providers" "$DIR/rules"
+fail() { printf '%s\n' "$*" >&2; exit 1; }
+restart_service() {
+	# On a first import there is no procd instance to delete.  Ignore that
+	# harmless stop error, then always issue an explicit start.
+	/etc/init.d/minimihomo stop >/dev/null 2>&1 || true
+	/etc/init.d/minimihomo start
+}
+normalize() {
+	[ -s "$DRAFT" ] || fail '配置为空，请导入 YAML 或在编辑器中粘贴。'
+	# A user-supplied full Mihomo YAML is authoritative.  Do not rewrite it:
+	# rewriting controller/secret fields can invalidate otherwise working YAML
+	# (and makes imported configurations behave differently from direct runs).
+	cp "$DRAFT" "$ORIGINAL.new"; cp "$DRAFT" "$NORMALIZED.new"; : > "$REPORT.new"
+	printf '%s\n' '完整 YAML 已原样保留：未改写 external-controller、secret 或其他字段。' >> "$REPORT.new"
+	if grep -q '^[[:space:]]*external-controller:' "$NORMALIZED.new"; then
+		printf '%s\n' '检测到 external-controller：节点、流量和测速功能取决于该控制器可从路由器本机访问。' >> "$REPORT.new"
+	else
+		printf '%s\n' '未检测到 external-controller：配置可正常运行，但节点、流量和测速页面不可用。' >> "$REPORT.new"
+	fi
+	if grep -q '^[[:space:]]*secret:' "$NORMALIZED.new"; then
+		printf '%s\n' '检测到控制器 secret：请在插件设置中使用相同 secret，才能调用 Mihomo API。' >> "$REPORT.new"
+	fi
+	printf '%s\n' '未执行 YAML 校验：此配置将直接交由 Mihomo 运行。' >> "$REPORT.new"
+	mv "$ORIGINAL.new" "$ORIGINAL"; mv "$NORMALIZED.new" "$NORMALIZED"; mv "$REPORT.new" "$REPORT"
+}
+case "${1:-report}" in
+ validate) normalize; cat "$REPORT";;
+ apply) normalize; [ ! -s "$RUNTIME" ] || cp "$RUNTIME" "$RUNTIME.bak"; cp "$NORMALIZED" "$RUNTIME"; uci set minimihomo.global.config_source=custom; uci set minimihomo.global.enabled=1; uci commit minimihomo; restart_service; printf '%s\n' '已直接应用配置；以下是最近启动日志：'; tail -n 80 /tmp/minimihomo.log 2>/dev/null || true;;
+ revert) [ -s "$RUNTIME.bak" ] || fail '没有可恢复的上一版运行配置。'; cp "$RUNTIME.bak" "$RUNTIME"; uci set minimihomo.global.config_source=custom; uci commit minimihomo; restart_service; tail -n 80 /tmp/minimihomo.log 2>/dev/null || true;;
+ generated) uci set minimihomo.global.config_source=generated; uci set minimihomo.global.enabled=1; uci commit minimihomo; restart_service; tail -n 80 /tmp/minimihomo.log 2>/dev/null || true;;
+ report) cat "$REPORT" 2>/dev/null || printf '%s\n' '尚未导入配置。';;
+ original|normalized|runtime) cat "$DIR/$1.yaml" 2>/dev/null || true;;
+ *) fail '不支持的配置操作。';;
+esac

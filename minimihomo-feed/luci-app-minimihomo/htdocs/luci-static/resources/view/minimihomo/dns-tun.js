@@ -1,0 +1,4 @@
+'use strict';
+'require view';
+'require form';
+return view.extend({render:function(){var m=new form.Map('minimihomo',_('DNS / TUN'),_('这些设置仅影响订阅自动生成模式；完整 YAML 模式请在配置文件页面维护。')),d=m.section(form.NamedSection,'dns','dns',_('DNS')),o=d.option(form.Flag,'enabled',_('启用 DNS'));o.default=o.enabled;o=d.option(form.ListValue,'mode',_('模式'));o.value('fake-ip','Fake-IP');o.value('redir-host','Redir-Host');o=d.option(form.Value,'listen_port',_('监听端口'));o.datatype='port';d.option(form.DynamicList,'domestic',_('国内 DNS'));d.option(form.DynamicList,'foreign',_('国外 DNS'));d.option(form.DynamicList,'fakeip_filter',_('Fake-IP 排除'));var g=m.section(form.NamedSection,'global','global',_('TUN'));o=g.option(form.Flag,'tun',_('启用 TUN 透明代理'));o.default=o.enabled;g.option(form.Flag,'ipv6',_('启用 IPv6'));return m.render();},handleSaveApply:null,handleSave:null,handleReset:null});

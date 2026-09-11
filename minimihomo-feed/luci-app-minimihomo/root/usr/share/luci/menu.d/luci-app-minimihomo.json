@@ -1,0 +1,14 @@
+{
+  "admin/services/minimihomo": { "title": "MiniMihomo", "order": 70, "action": { "type": "firstchild" } },
+  "admin/services/minimihomo/overview": { "title": "概览", "order": 10, "action": { "type": "view", "path": "minimihomo/overview" } },
+  "admin/services/minimihomo/config": { "title": "配置", "order": 20, "action": { "type": "firstchild" } },
+  "admin/services/minimihomo/config/subscriptions": { "title": "在线订阅", "order": 21, "action": { "type": "view", "path": "minimihomo/subscriptions" } },
+  "admin/services/minimihomo/config/files": { "title": "配置文件", "order": 22, "action": { "type": "view", "path": "minimihomo/config" } },
+  "admin/services/minimihomo/config/current": { "title": "当前配置", "order": 23, "action": { "type": "view", "path": "minimihomo/current" } },
+  "admin/services/minimihomo/nodes": { "title": "节点", "order": 30, "action": { "type": "view", "path": "minimihomo/nodes" } },
+  "admin/services/minimihomo/routing": { "title": "分流", "order": 40, "action": { "type": "view", "path": "minimihomo/routing" } },
+  "admin/services/minimihomo/dns-tun": { "title": "DNS / TUN", "order": 50, "action": { "type": "view", "path": "minimihomo/dns-tun" } },
+  "admin/services/minimihomo/proxy": { "title": "代理服务", "order": 60, "action": { "type": "view", "path": "minimihomo/proxy" } },
+  "admin/services/minimihomo/connections": { "title": "实时连接", "order": 70, "action": { "type": "view", "path": "minimihomo/connections" } },
+  "admin/services/minimihomo/logs": { "title": "日志", "order": 80, "action": { "type": "view", "path": "minimihomo/logs" } }
+}

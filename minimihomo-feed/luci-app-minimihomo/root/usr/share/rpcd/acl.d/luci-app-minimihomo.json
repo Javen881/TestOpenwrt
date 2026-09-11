@@ -1,0 +1,34 @@
+{
+  "luci-app-minimihomo": {
+    "description": "Grant LuCI access to MiniMihomo management commands",
+    "read": {
+	  "cgi-io": [ "exec" ],
+      "uci": [ "minimihomo" ],
+      "file": {
+        "/etc/minimihomo/original.yaml": [ "read" ],
+        "/etc/minimihomo/normalized.yaml": [ "read" ],
+        "/etc/minimihomo/runtime.yaml": [ "read" ],
+        "/etc/minimihomo/normalizer-report.txt": [ "read" ],
+        "/usr/libexec/minimihomo/api": [ "exec" ],
+        "/etc/init.d/minimihomo": [ "exec" ],
+        "/usr/sbin/logread": [ "exec" ]
+      },
+      "ubus": {
+        "file": [ "read" ]
+      }
+    },
+    "write": {
+	  "cgi-io": [ "upload" ],
+      "uci": [ "minimihomo" ],
+      "file": {
+        "/tmp/minimihomo-draft.yaml": [ "write" ],
+        "/usr/libexec/minimihomo/config": [ "exec" ],
+        "/usr/libexec/minimihomo/api": [ "exec" ],
+        "/etc/init.d/minimihomo": [ "exec" ]
+      },
+      "ubus": {
+        "file": [ "exec", "write" ]
+      }
+    }
+  }
+}
