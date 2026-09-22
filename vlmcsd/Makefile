@@ -5,7 +5,7 @@ PKG_VERSION:=1113
 PKG_RELEASE:=19
 
 PKG_SOURCE:=vlmcsd-svn1113.tar.gz
-PKG_SOURCE_URL:=file://$(TOPDIR)/package/vlmcsd
+PKG_SOURCE_URL:=file://$(CURDIR)
 PKG_HASH:=skip
 PKG_BUILD_DIR:=$(BUILD_DIR)/vlmcsd-svn1113
 
