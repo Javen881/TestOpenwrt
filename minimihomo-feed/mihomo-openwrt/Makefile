@@ -1,10 +1,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mihomo
-PKG_VERSION:=git
+PKG_VERSION:=1.10.0
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-3.0-only
 PKG_BUILD_DEPENDS:=golang/host
+PKG_BUILD_FLAGS:=no-mips16
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 GO_PKG:=github.com/metacubex/mihomo
 GO_PKG_BUILD_PKG:=$(GO_PKG)

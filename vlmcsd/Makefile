@@ -21,8 +21,6 @@ define Package/vlmcsd
   SECTION:=net
   CATEGORY:=Network
   TITLE:=vlmcsd for OpenWRT
-  # Keep the user-visible package version compatible with prior svn builds.
-  VERSION:=svn1113-r21
   URL:=http://forums.mydigitallife.info/threads/50234
   DEPENDS:=+libpthread
 endef
