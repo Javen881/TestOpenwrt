@@ -3,6 +3,8 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=clash
 PKG_VERSION:=0.16.3
 PKG_MAINTAINER:=frainzy1477
+PKG_ARCH:=unsupported
+PKG_SOURCE:=clash-linux-unsupported-v$(PKG_VERSION).gz
 
 ifeq ($(ARCH),mipsel)
 	PKG_ARCH:=mipsle
